@@ -1,0 +1,24 @@
+name: format
+on: [push, pull_request]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-versions: [3.10.1]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Setup project
+        run: sudo python setup.py develop
+      - name: Generate report for 'understandingbitcoin' module
+        run: pylint ./understandingbitcoin --fail-under=10
+      - name: Generate report for 'test' module
+        # c0114: Missing module docstring
+        # c0116: Missing function or method docstring
+        # r0904: Too many public methods
+        run: pylint ./test --fail-under=10 --disable=c0114,c0116,r0904
