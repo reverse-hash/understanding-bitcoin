@@ -115,14 +115,18 @@ Other types of operations are available, such as:
 bitstream = BitStream.parse_str('1010111100010010')
 
 # Returns the string value
-str(bitstream) # 1010111100010010
+str(bitstream) # 1010111100010010 (str)
 
 # Returns the number of bits 
-len(bitstream) # 16
+len(bitstream) # 16 (int)
+
+# Concatenates and returns a new sequence
+other = BitStream.from_hex('01') # 00000001
+BitStream.join(bitstream, other) # 101011110001001000000001 (BitStream)
 
 # Returns the hexadecimal string value
-bitstream.hex() # af12
+bitstream.hex() # af12 (str)
 
 # Returns an inmmutable byte array
-bitstream.bytes() # b'\xaf\x12'
+bitstream.bytes() # b'\xaf\x12' (bytes)
 ```
