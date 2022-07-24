@@ -4,6 +4,7 @@ from understandingbitcoin.common.bit import BitStream
 
 
 class TestBitStream(unittest.TestCase):
+
     """Unit test for the BitStream class"""
 
     def test_from_bytes(self):

@@ -5,6 +5,7 @@ import string
 
 
 class BitStream:
+
     """Implements an immutable binary sequence, backed by a string
     representation.
 
@@ -17,7 +18,8 @@ class BitStream:
 
     @classmethod
     def from_bytes(cls, byte_value: bytes) -> BitStream:
-        """Returns a binary sequence represented by the given array of bytes.
+        """
+        Returns a binary sequence represented by the given array of bytes.
 
         :param byte_value: The array of bytes to convert
         :return: The binary sequence representation
@@ -26,7 +28,8 @@ class BitStream:
 
     @classmethod
     def from_char(cls, char: str) -> BitStream:
-        """Returns a binary sequence represented by the given UTF-8 character.
+        """
+        Returns a binary sequence represented by the given UTF-8 character.
 
         :param char: The UTF-8 character to convert
         :return: The binary sequence representation
@@ -39,7 +42,8 @@ class BitStream:
 
     @classmethod
     def from_hex(cls, hex_string: str) -> BitStream:
-        """Returns a binary sequence represented by the given hexadecimal
+        """
+        Returns a binary sequence represented by the given hexadecimal
         string.
 
         :param hex_string: The hexadecimal string to convert
@@ -52,7 +56,8 @@ class BitStream:
 
     @classmethod
     def from_int(cls, integer: int, zfill=0) -> BitStream:
-        """Returns a binary sequence represented by the given integer number.
+        """
+        Returns a binary sequence represented by the given integer number.
 
         :param integer: The integer number to convert
         :param zfill: Desired length of the binary sequence to be filled with
@@ -76,7 +81,8 @@ class BitStream:
 
     @classmethod
     def join(cls, *others: BitStream | tuple | list | str):
-        """Concatenates the given binary sequences and returns the concatenated
+        """
+        Concatenates the given binary sequences and returns the concatenated
         binary sequence.
 
         :param others: The binary sequences to join together
@@ -89,7 +95,8 @@ class BitStream:
         return BitStream(''.join(list(map(str, others))))
 
     def __init__(self, binary_value: str = '', zfill=0):
-        """Constructs a binary sequence from a string representation of a
+        """
+        Constructs a binary sequence from a string representation of a
         binary number.
 
         :param binary_value: The string representation of a binary number
@@ -113,7 +120,8 @@ class BitStream:
         return self._value
 
     def __add__(self, other: BitStream | str | int) -> BitStream:
-        """Returns a new binary sequence whose value is the binary addition of
+        """
+        Returns a new binary sequence whose value is the binary addition of
         this and other.
 
         :param other: The binary sequence, integer or string representation
@@ -128,7 +136,8 @@ class BitStream:
         return BitStream.from_int(int(self._value or self.BIT_0, 2) + other)
 
     def __and__(self, other: BitStream):
-        """Returns a new binary sequence whose value is the bitwise AND
+        """
+        Returns a new binary sequence whose value is the bitwise AND
         operation of this and other.
 
         :param other: The binary sequence with which to apply the operation
@@ -150,7 +159,8 @@ class BitStream:
         return num_bits, operand1, operand2
 
     def __getitem__(self, item: int | slice) -> BitStream:
-        """Returns a new binary sequence that is a subset of this binary
+        """
+        Returns a new binary sequence that is a subset of this binary
         sequence.
 
         :param item: The index or slice of the subset
@@ -159,7 +169,8 @@ class BitStream:
         return BitStream.parse_str(self._value[item])
 
     def __invert__(self):
-        """Returns a new binary sequence whose value is the bitwise NOT
+        """
+        Returns a new binary sequence whose value is the bitwise NOT
         operation of this.
 
         :return: A new binary sequence with the result of the operation
@@ -171,8 +182,9 @@ class BitStream:
         return BitStream.parse_str(complement)
 
     def __or__(self, other: BitStream):
-        """Returns a new binary sequence whose value is the bitwise OR
-        operation of this and other.
+        """
+        Returns a new binary sequence whose value is the bitwise OR operation
+        of this and other.
 
         :param other: The binary sequence with which to apply the operation
         :return: A new binary sequence with the result of the operation
@@ -186,7 +198,8 @@ class BitStream:
         return self.parse_str(value)
 
     def __radd__(self, other: BitStream | str | int):
-        """Returns a new binary sequence whose value is the binary addition of
+        """
+        Returns a new binary sequence whose value is the binary addition of
         this and other.
 
         :param other: The binary sequence, integer or string representation of
@@ -196,8 +209,9 @@ class BitStream:
         return self + other
 
     def __rshift__(self, shifts: int):
-        """Returns a new binary sequence whose value is the result of shifting
-        to the right.
+        """
+        Returns a new binary sequence whose value is the result of shifting to
+        the right.
 
         :param shifts: The number of right shifts to apply
         :return: A new binary sequence with the result of the operation
@@ -208,8 +222,9 @@ class BitStream:
         return BitStream.parse_str(value)
 
     def __xor__(self, other: BitStream):
-        """Returns a new binary sequence whose value is the bitwise XOR
-        operation of this and other.
+        """
+        Returns a new binary sequence whose value is the bitwise XOR operation
+        of this and other.
 
         :param other: The binary sequence with which to apply the operation
         :return: A new binary sequence with the result of the operation
@@ -224,7 +239,8 @@ class BitStream:
         return self.parse_str(value)
 
     def mod(self, divisor: int) -> BitStream:
-        """Returns a new binary sequence whose value is the modulo of this and
+        """
+        Returns a new binary sequence whose value is the modulo of this and
         2^n.
 
         :param divisor: The number of bits with which to calculate the modulo
@@ -234,7 +250,8 @@ class BitStream:
         return BitStream.parse_str(self._value[-divisor::])
 
     def rotate_left(self, shifts: int) -> BitStream:
-        """Returns a new binary sequence whose value is the result of shifting
+        """
+        Returns a new binary sequence whose value is the result of shifting
         a specified number of bits to the left but except that the bits that
         fall off at the beginning are moved back to the end.
 
@@ -250,7 +267,8 @@ class BitStream:
         return self.parse_str(value)
 
     def rotate_right(self, shifts: int) -> BitStream:
-        """Returns a new binary sequence whose value is the result of shifting
+        """
+        Returns a new binary sequence whose value is the result of shifting
         a specified number of bits to the right but except that the bits that
         fall off at the end are moved back to the beginning.
 
@@ -267,13 +285,14 @@ class BitStream:
         return self.parse_str(value)
 
     def bytes(self) -> bytes:
-        """Returns an immutable byte array representation of the binary
-        sequence. """
+        """
+        Returns an immutable byte array representation of the binary sequence.
+        """
         assert len(self) % 8 == 0
         return bytes.fromhex(self.hex())
 
     def hex(self) -> str:
-        """Returns a hexadecimal string representation of the binary
-        sequence. """
+        """
+        Returns a hexadecimal string representation of the binary sequence. """
         return f'{hex(int(self._value, 2))[2:]:0>{len(self._value) // 4}}' \
             if len(self) > 0 else ''
