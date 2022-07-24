@@ -30,7 +30,7 @@ BitStream.parse_str('00001111') # 00001111
 It is possible to perform common binary operations with a sequence of bits, where the result will be returned in a new instance:
 
 ### Additive operation
-Sums arithmetically the two binary numbers.
+Sums arithmetically the two binary sequencies.
 
 ```python
 bitstream1 = BitStream.from_int(1) # 1
