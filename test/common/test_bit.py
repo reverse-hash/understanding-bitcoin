@@ -74,29 +74,30 @@ class TestBitStream(unittest.TestCase):
         bitstream1: BitStream = BitStream.parse_str('01')
         bitstream2: BitStream = BitStream.parse_str('10')
 
-        actual_result: BitStream = BitStream.join(bitstream1, bitstream2)
+        actual_result: BitStream = bitstream1.join(bitstream2)
 
         self.assertEqual('0110', actual_result)
 
-    def test_join_one_element(self):
+    def test_join_empty_element(self):
         bitstream: BitStream = BitStream.parse_str('01')
 
-        actual_result: BitStream = BitStream.join(bitstream)
+        actual_result: BitStream = bitstream.join()
 
         self.assertEqual('01', actual_result)
 
     def test_join_empty_tuple(self):
-        actual_result: BitStream = BitStream.join(tuple())
+        bitstream: BitStream = BitStream.parse_str('01')
+        actual_result: BitStream = bitstream.join()
 
-        self.assertEqual('', actual_result)
+        self.assertEqual('01', actual_result)
 
     def test_join_list(self):
         bitstream1 = BitStream.parse_str('01')
         bitstream2 = BitStream.parse_str('10')
 
-        actual_result: BitStream = BitStream.join(bitstream1, bitstream2)
+        actual_result: BitStream = bitstream1.join(bitstream2, '01')
 
-        self.assertEqual('0110', actual_result)
+        self.assertEqual('011001', actual_result)
 
     def test_getitem(self):
         bitstream: BitStream = BitStream.parse_str('01')

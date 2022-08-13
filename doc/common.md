@@ -1,5 +1,5 @@
 # Common utilities
-Bitcoin makes use of different technologies and algorithms for block generation, key creation, etc. All these operations usually require operating at bit level or with a set of bytes. To facilitate the development and study of these techniques, we will use a series of utilities designed for this purpose.
+Bitcoin makes use of different technologies and algorithms. All these operations usually require operating at bit level or with a set of bytes. To facilitate the understanding and study of these matters, we will use a series of utilities designed for help us in this purpose.
 
 ## BitStream
 Implements an immutable binary sequence, backed by a string representation.
@@ -122,7 +122,7 @@ len(bitstream) # 16 (int)
 
 # Concatenates and returns a new sequence
 other = BitStream.from_hex('01') # 00000001
-BitStream.join(bitstream, other) # 101011110001001000000001 (BitStream)
+bitstream.join(other) # 101011110001001000000001 (BitStream)
 
 # Returns the hexadecimal string value
 bitstream.hex() # af12 (str)

@@ -50,9 +50,9 @@ class BitStream:
         :return: The binary sequence representation
         """
         assert all(c in string.hexdigits for c in hex_string)
-        return BitStream.join(tuple(
-            map(lambda i: BitStream.from_int(i, zfill=4),
-                map(lambda h: int(h, 16), hex_string))))
+        return BitStream.parse_str(''.join(tuple(
+            map(lambda i: str(BitStream.from_int(i, zfill=4)),
+                map(lambda h: int(h, 16), hex_string)))))
 
     @classmethod
     def from_int(cls, integer: int, zfill=0) -> BitStream:
@@ -79,20 +79,20 @@ class BitStream:
         """
         return BitStream(binary_string)
 
-    @classmethod
-    def join(cls, *others: BitStream | tuple | list | str):
+    def join(self, *others: BitStream | tuple | list | str):
         """
-        Concatenates the given binary sequences and returns the concatenated
-        binary sequence.
+        Returns a new binary sequence whose value is the binary concatenation
+        of this and other.
 
-        :param others: The binary sequences to join together
-        :return: A new binary sequence composed of copies of the binary
-        sequences joined
+        :param others: The binary sequences to concatenate
+        :return: A new binary sequence with the concatenation of this and the
+        given binary sequence binary
         """
         if len(others) == 1 and isinstance(others[0], (list, tuple)):
             others = others[0]
 
-        return BitStream(''.join(list(map(str, others))))
+        return BitStream.parse_str(self._value
+                                   + ''.join(list(map(str, others))))
 
     def __init__(self, binary_value: str = '', zfill=0):
         """
