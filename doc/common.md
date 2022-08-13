@@ -130,3 +130,56 @@ bitstream.hex() # af12 (str)
 # Returns an inmmutable byte array
 bitstream.bytes() # b'\xaf\x12' (bytes)
 ```
+
+## ByteBuffer
+
+Implements a dynamic array of bytes with a higher level of abstraction to perform read and write operations.
+
+The buffer has an unlimited capacity and all write operations are performed at the end of the buffer. Read operations are limited to the buffer contents and can be done through an absolute or relative position.
+
+### Preliminary concepts
+
+#### Word
+Defined as the unit of data handled by a computer processor instruction. This unit is measured in bits (8, 16, 32...) and may vary depending on the CPU architecture. Let's stick to the fact that a CPU works with a fixed blocks of data called word and it can composed by one or several bytes. The most significant byte (MSB) is the byte with the largest values, in the sense of having the highest weight bits. Additionally, the least significant byte (LSB) refers to the byte with the lower weights.
+
+Let's take as an example a 32-bit word where we want to represent an integer number (``2009`` in decimal, ``7D9`` in hexadecimal, ``11111011001`` in binary):
+
+<!-- w = \underset{MSB}{\underbrace{00000000}}0000000011110100\underset{LSB}{\underbrace{10100010}} -->
+<img src="https://latex.codecogs.com/png.image?\bg_white&space;w%20=%20\underset{MSB}{\underbrace{00000000}}0000000011110100\underset{LSB}{\underbrace{10100010}}"/>
+
+#### Endianness
+Refers to the order in which the sequence of bytes is stored in a memory. There are multiple orderings, but the most common and the ones we need to know are the **big-endian (BE)** or **little-endian (LE)**.
+
+##### Big-endian
+
+Notation that stores the most significant byte (MSB) of a word at the smallest memory address and the least significant byte (LSB) at the largest memory address.
+
+Let's continue with our example to see how it works. Suppose we want to store in memory the previous 32-bit word. When writing it to memory, it should be ordered as follows:
+
+| Memory Address | Content  |
+| --- | --- |
+| ... | |
+| 0x0006 | 00000000 |
+| 0x0007 | 00000000 |
+| 0x0008 | 11110100 |
+| 0x0009 | 10100010 |
+| ... | |
+
+Note that 4 bytes (32 bits) of consecutive memory is reserved for the word. The MSB is stored in the the smallest address (0x0006) and the LSB is stored in the the largest address (0x0009).
+
+### Little-endian
+
+It stores the most significant byte (MSB) of a word in the largest memory address and the least significant (LSB) at the smallest memory address.
+
+Same example as above but following this ordering:
+
+| Memory Address | Content  |
+| --- | --- |
+| ... | |
+| 0x0006 | 10100010 |
+| 0x0007 | 11110100 |
+| 0x0008 | 00000000 |
+| 0x0009 | 00000000 |
+| ... | |
+
+Note that the MSB is stored in the the largest address (0x0009) and the LSB is stored in the the smallest address (0x0006).
