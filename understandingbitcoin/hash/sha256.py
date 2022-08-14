@@ -71,7 +71,7 @@ class Sha256:
         # becomes congruent to 448, modulo 512
         extended_message.put_byte(0x80)
 
-        k = (cls._BLOCK_BYTES - (byte_length
+        k = cls._BLOCK_BYTES - ((byte_length
                                  + 1  # the byte added in the previous line
                                  + cls._LENGTH_BYTES) % cls._BLOCK_BYTES)
         for _ in range(k):

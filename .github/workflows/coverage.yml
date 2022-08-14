@@ -17,5 +17,5 @@ jobs:
         run: sudo python setup.py develop
       - name: Generate report
         run: |
-          coverage run --source=understandingbitcoin -m unittest
+          coverage run --source=understandingbitcoin -m unittest parameterized
           coverage report --fail-under=80
