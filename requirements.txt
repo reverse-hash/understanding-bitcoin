@@ -1,0 +1,2 @@
+parameterized~=0.8.1
+setuptools~=63.2.0

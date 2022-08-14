@@ -6,9 +6,9 @@ Implements an immutable binary sequence, backed by a string representation.
 
 Note that this is not the most efficient way to implement such class, but for didactic and debugging purposes, it is a very convenient and user-friendly option.
 
-To create an instance of a bit sequence, we can do it in several ways:
+To create an instance of a bit sequence we can do it in several ways:
 
-```python3
+```python
 # Given a hexadecimal string
 BitStream.from_hex('f731') # 1111011100110001
 
@@ -17,7 +17,7 @@ BitStream.from_int(2) # 10
 BitStream.from_int(2, zfill=8) # 00000010
 
 # Given a UTF-8 character
-BitStraem.from_char('a') # 01100001
+BitStream.from_char('a') # 01100001
 
 # Given an array of bytes
 bytes_value: bytes = bytes.fromhex('f731')
@@ -135,51 +135,77 @@ bitstream.bytes() # b'\xaf\x12' (bytes)
 
 Implements a dynamic array of bytes with a higher level of abstraction to perform read and write operations.
 
-The buffer has an unlimited capacity and all write operations are performed at the end of the buffer. Read operations are limited to the buffer contents and can be done through an absolute or relative position.
+The buffer has an unlimited capacity and all write operations are performed at the end of the buffer. Read operations are limited to the buffer contents and are performed through a relative position.
 
-### Preliminary concepts
+The **word** is the unit of data handled by the buffer. This unit is measured in bits (8, 16, 32 and 64) and may vary depending on the type of data to be read or written. The most significant byte (MSB) of  word is the byte with the largest values, in the sense of having the highest weight bits. Additionally, the least significant byte (LSB) refers to the byte with the lower weights.
 
-#### Word
-Defined as the unit of data handled by a computer processor instruction. This unit is measured in bits (8, 16, 32...) and may vary depending on the CPU architecture. Let's stick to the fact that a CPU works with a fixed blocks of data called word and it can composed by one or several bytes. The most significant byte (MSB) is the byte with the largest values, in the sense of having the highest weight bits. Additionally, the least significant byte (LSB) refers to the byte with the lower weights.
+For example, a 32-bit word containing the unsigned integer in ``2009`` in decimal or ``7D9`` in hexadecimal would look like this:
 
-Let's take as an example a 32-bit word where we want to represent an integer number (``2009`` in decimal, ``7D9`` in hexadecimal, ``11111011001`` in binary):
+<!-- \underset{MSB}{\underbrace{00000000}}0000000011110100\underset{LSB}{\underbrace{10100010}} -->
+<img src="https://latex.codecogs.com/png.image?\bg_white&space;\underset{MSB}{\underbrace{00000000}}0000000011110100\underset{LSB}{\underbrace{10100010}}"/>
 
-<!-- w = \underset{MSB}{\underbrace{00000000}}0000000011110100\underset{LSB}{\underbrace{10100010}} -->
-<img src="https://latex.codecogs.com/png.image?\bg_white&space;w%20=%20\underset{MSB}{\underbrace{00000000}}0000000011110100\underset{LSB}{\underbrace{10100010}}"/>
+When a word is stored in a memory, such as a buffer, the order in which the bytes are stored is important. In computing, the **endianness** refers to the order in which the sequence of bytes is stored in memory. There are multiple orderings, but the most common and the ones we need to know are the **big-endian (BE)** or **little-endian (LE)**. The first stores the most significant byte (MSB) of a word at the smallest memory address and the least significant byte (LSB) at the largest memory address. The other, stores the most significant byte (MSB) of a word in the largest memory address and the least significant (LSB) at the smallest memory address.
 
-#### Endianness
-Refers to the order in which the sequence of bytes is stored in a memory. There are multiple orderings, but the most common and the ones we need to know are the **big-endian (BE)** or **little-endian (LE)**.
+To create an instance of a byte buffer we can do it in several ways:
 
-##### Big-endian
+```python
+# An empty one
+ByteBuffer(order=ByteOrder.BIG_ENDIAN) # or ByteBuffer() is equivalent
 
-Notation that stores the most significant byte (MSB) of a word at the smallest memory address and the least significant byte (LSB) at the largest memory address.
+# Given a hexadecimal string to initialize the buffer contents
+ByteBuffer.from_hex('f731', ByteOrder.LITTLE_ENDIAN)
 
-Let's continue with our example to see how it works. Suppose we want to store in memory the previous 32-bit word. When writing it to memory, it should be ordered as follows:
+# Given an UTF-8 string to initialize the buffer contents
+ByteBuffer.from_str('ab',  ByteOrder.LITTLE_ENDIAN)
+```
 
-| Memory Address | Content  |
-| --- | --- |
-| ... | |
-| 0x0006 | 00000000 |
-| 0x0007 | 00000000 |
-| 0x0008 | 11110100 |
-| 0x0009 | 10100010 |
-| ... | |
+### Write operations
 
-Note that 4 bytes (32 bits) of consecutive memory is reserved for the word. The MSB is stored in the the smallest address (0x0006) and the LSB is stored in the the largest address (0x0009).
+There are multiple methods to write a sequences of bytes in the memory taking into consideration the size of the word to follow the ordering settled in the buffer.
 
-### Little-endian
+| Operation | Description |
+|---|---|
+| put_byte | Write a byte/8-bit word at the end of the buffer |
+| put_word16 | Write a 16-bit word at the end of the buffer |
+| put_word32 | Write a 32-bit word at the end of the buffer |
+| put_word64 | Write a 64-bit word at the end of the buffer |
 
-It stores the most significant byte (MSB) of a word in the largest memory address and the least significant (LSB) at the smallest memory address.
 
-Same example as above but following this ordering:
+To write to the buffer we can do it in the following way:
 
-| Memory Address | Content  |
-| --- | --- |
-| ... | |
-| 0x0006 | 10100010 |
-| 0x0007 | 11110100 |
-| 0x0008 | 00000000 |
-| 0x0009 | 00000000 |
-| ... | |
+```python
+# Example of a big-endian ordered buffer
+bytebuffer = ByteBuffer(order=ByteOrder.BIG_ENDIAN)
+bytebuffer.put_word8(0x3f) # 3f 
+bytebuffer.put_word16(0xff11) # 3f ff 11
+bytebuffer.put_word32(0xff773300) # 3f ff 11 ff 77 33 00
 
-Note that the MSB is stored in the the largest address (0x0009) and the LSB is stored in the the smallest address (0x0006).
+# Example of a little-endian ordered buffer
+bytebuffer = ByteBuffer(order=ByteOrder.LITTLE_ENDIAN)
+bytebuffer.put_word8(0x3f) # 3f 
+bytebuffer.put_word16(0xff11) # 3f 11 ff
+bytebuffer.put_word32(0xff773300) # 3f 11 ff 00 33 77 ff
+```
+
+### Read operations
+
+| Operation | Description |
+|---|---|
+| get_byte | Read a byte/8-bit word from the buffer |
+| get_word16 | Read a 16-bit word from the buffer |
+| get_word32 | Read a 32-bit word from the buffer |
+| get_word64 | Read a 64-bit word from the buffer |
+
+```python
+# Example of a big-endian ordered buffer
+bytebuffer = ByteBuffer('00a1b2c3d4e5f6', order=ByteOrder.BIG_ENDIAN)
+bytebuffer.get_byte() # 00
+bytebuffer.get_word16() # a1 b2
+bytebuffer.get_word32() # c3 d4 e5 f6
+
+# Example of a little-endian ordered buffer
+bytebuffer = ByteBuffer('00a1b2c3d4e5f6', order=ByteOrder.LITTLE_ENDIAN)
+bytebuffer.get_byte() # 00
+bytebuffer.get_word16() # b2 a1
+bytebuffer.get_word32() # f6 e5 d4 c3
+```

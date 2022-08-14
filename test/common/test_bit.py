@@ -52,14 +52,14 @@ class TestBitStream(unittest.TestCase):
     def test_from_int(self):
         integer: int = 2
 
-        actual_result: BitStream = BitStream.from_int(integer)
+        actual_result: BitStream = BitStream.from_unsigned_int(integer)
 
         self.assertEqual('10', actual_result)
 
     def test_from_int_zfill(self):
         integer: int = 2
 
-        actual_result: BitStream = BitStream.from_int(integer, zfill=10)
+        actual_result: BitStream = BitStream.from_unsigned_int(integer, zfill=10)
 
         self.assertEqual('0000000010', actual_result)
 
@@ -128,8 +128,8 @@ class TestBitStream(unittest.TestCase):
         self.assertEqual('10', actual_result)
 
     def test_add(self):
-        bitstream1: BitStream = BitStream.from_int(1)
-        bitstream2: BitStream = BitStream.from_int(2)
+        bitstream1: BitStream = BitStream.from_unsigned_int(1)
+        bitstream2: BitStream = BitStream.from_unsigned_int(2)
 
         actual_result: BitStream = bitstream1 + bitstream2
 
@@ -137,14 +137,14 @@ class TestBitStream(unittest.TestCase):
 
     def test_add_empty_first(self):
         bitstream1: BitStream = BitStream()
-        bitstream2: BitStream = BitStream.from_int(2)
+        bitstream2: BitStream = BitStream.from_unsigned_int(2)
 
         actual_result: BitStream = bitstream1 + bitstream2
 
         self.assertEqual('10', actual_result)
 
     def test_add_empty_second(self):
-        bitstream1: BitStream = BitStream.from_int(2)
+        bitstream1: BitStream = BitStream.from_unsigned_int(2)
         bitstream2: BitStream = BitStream()
 
         actual_result: BitStream = bitstream1 + bitstream2
@@ -152,7 +152,7 @@ class TestBitStream(unittest.TestCase):
         self.assertEqual('10', actual_result)
 
     def test_add_int(self):
-        bitstream: BitStream = BitStream.from_int(1)
+        bitstream: BitStream = BitStream.from_unsigned_int(1)
         integer: int = 2
 
         actual_result: BitStream = bitstream + integer
@@ -168,7 +168,7 @@ class TestBitStream(unittest.TestCase):
         self.assertEqual('10', actual_result)
 
     def test_add_str(self):
-        bitstream: BitStream = BitStream.from_int(1)
+        bitstream: BitStream = BitStream.from_unsigned_int(1)
         string: str = '10'
 
         actual_result: BitStream = bitstream + string
@@ -307,7 +307,7 @@ class TestBitStream(unittest.TestCase):
     def test_hex_int(self):
         integer: int = 0x0f731
 
-        actual_result: str = BitStream.from_int(integer).hex()
+        actual_result: str = BitStream.from_unsigned_int(integer).hex()
 
         self.assertEqual('f731', actual_result)
 

@@ -6,7 +6,8 @@ import string
 
 class BitStream:
 
-    """Implements an immutable binary sequence, backed by a string
+    """
+    Implements an immutable binary sequence, backed by a string
     representation.
 
     Note that this is not the most efficient way to implement such class, but
@@ -24,7 +25,7 @@ class BitStream:
         :param byte_value: The array of bytes to convert
         :return: The binary sequence representation
         """
-        return BitStream.from_int(int.from_bytes(byte_value, byteorder='big'))
+        return BitStream.from_unsigned_int(int.from_bytes(byte_value, byteorder='big'))
 
     @classmethod
     def from_char(cls, char: str) -> BitStream:
@@ -34,10 +35,12 @@ class BitStream:
         :param char: The UTF-8 character to convert
         :return: The binary sequence representation
         """
-        assert len(char) == 1
+        if len(char) != 1:
+            raise ValueError('the given parameter is not a UTF-8 character')
+
         char_bytes = bytes(char, 'utf-8')
         num_bits = len(char_bytes) * 8
-        return BitStream.from_int(
+        return BitStream.from_unsigned_int(
             int.from_bytes(char_bytes, byteorder='big'), num_bits)
 
     @classmethod
@@ -49,23 +52,29 @@ class BitStream:
         :param hex_string: The hexadecimal string to convert
         :return: The binary sequence representation
         """
-        assert all(c in string.hexdigits for c in hex_string)
+        if not all(c in string.hexdigits for c in hex_string):
+            raise ValueError('the given parameter is not a hexadecimal string')
+
         return BitStream.parse_str(''.join(tuple(
-            map(lambda i: str(BitStream.from_int(i, zfill=4)),
+            map(lambda i: str(BitStream.from_unsigned_int(i, zfill=4)),
                 map(lambda h: int(h, 16), hex_string)))))
 
     @classmethod
-    def from_int(cls, integer: int, zfill=0) -> BitStream:
+    def from_unsigned_int(cls, integer: int, zfill=0) -> BitStream:
         """
-        Returns a binary sequence represented by the given integer number.
+        Returns a binary sequence represented by the given unsigned integer
+        number.
 
-        :param integer: The integer number to convert
+        :param integer: The unsigned integer number to convert
         :param zfill: Desired length of the binary sequence to be filled with
         leading zeros. If the value of the parameter is less than the length
         of binary representation, no filling is done
         :return: The binary sequence representation
         """
-        assert integer >= 0
+        if integer < 0:
+            raise ValueError('the given parameter is not greater than or '
+                             + 'equal to zero')
+
         return BitStream(format(integer, 'b'), zfill)
 
     @classmethod
@@ -104,7 +113,9 @@ class BitStream:
         leading zeros. If the value of the parameter is less than the length
         of binary representation, no filling is done
         """
-        assert all(char in (self.BIT_0, self.BIT_1) for char in binary_value)
+        if not all(char in (self.BIT_0, self.BIT_1) for char in binary_value):
+            raise ValueError('the given parameter is not a binary number')
+
         self._value: str = binary_value.zfill(zfill)
 
     def __eq__(self, other: BitStream | str) -> bool:
@@ -131,9 +142,9 @@ class BitStream:
         if isinstance(other, (BitStream, str)):
             result: int = int(str(self) or self.BIT_0, 2) \
                           + int(str(other) or self.BIT_0, 2)
-            return BitStream.from_int(result, max(len(self), len(other)))
+            return BitStream.from_unsigned_int(result, max(len(self), len(other)))
 
-        return BitStream.from_int(int(self._value or self.BIT_0, 2) + other)
+        return BitStream.from_unsigned_int(int(self._value or self.BIT_0, 2) + other)
 
     def __and__(self, other: BitStream):
         """
@@ -216,7 +227,9 @@ class BitStream:
         :param shifts: The number of right shifts to apply
         :return: A new binary sequence with the result of the operation
         """
-        assert shifts >= 1
+        if shifts < 1:
+            raise ValueError('the given parameter is not greater than zero')
+
         value: str = self.BIT_0 * min(
             len(self._value), shifts) + self._value[0:-shifts]
         return BitStream.parse_str(value)
@@ -246,7 +259,9 @@ class BitStream:
         :param divisor: The number of bits with which to calculate the modulo
         :return: A new binary sequence with the result of the operation
         """
-        assert divisor >= 1
+        if divisor <= 0:
+            raise ValueError('the given parameter must be greater than zero')
+
         return BitStream.parse_str(self._value[-divisor::])
 
     def rotate_left(self, shifts: int) -> BitStream:
@@ -258,7 +273,8 @@ class BitStream:
         :param shifts: The number of left shifts to apply
         :return: A new binary sequence with the result of the operation
         """
-        assert shifts >= 0
+        if shifts <= 0:
+            raise ValueError('the given parameter must be greater than zero')
 
         if 0 < len(self) < shifts:
             shifts %= len(self)
@@ -275,7 +291,8 @@ class BitStream:
         :param shifts: The number of right shifts to apply
         :return: A new binary sequence with the result of the operation
         """
-        assert shifts >= 0
+        if shifts <= 0:
+            raise ValueError('the given parameter must be greater than zero')
 
         if 0 < len(self) < shifts:
             shifts %= len(self)
@@ -288,11 +305,15 @@ class BitStream:
         """
         Returns an immutable byte array representation of the binary sequence.
         """
-        assert len(self) % 8 == 0
+        if len(self) % 8 != 0:
+            raise ValueError('the length of the binary sequence is not '
+                             + 'multiple of eight')
+
         return bytes.fromhex(self.hex())
 
     def hex(self) -> str:
         """
-        Returns a hexadecimal string representation of the binary sequence. """
+        Returns a hexadecimal string representation of the binary sequence.
+        """
         return f'{hex(int(self._value, 2))[2:]:0>{len(self._value) // 4}}' \
             if len(self) > 0 else ''
