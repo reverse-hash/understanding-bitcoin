@@ -13,5 +13,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Setup project
+        run: sudo python setup.py develop
       - name: Run unit tests
         run: python -m unittest parameterized
