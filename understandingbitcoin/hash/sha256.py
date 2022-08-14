@@ -1,3 +1,4 @@
+"""..."""
 from understandingbitcoin.common.bit import BitStream
 from understandingbitcoin.common.byte import ByteBuffer, ByteOrder
 

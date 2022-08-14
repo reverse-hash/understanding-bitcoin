@@ -221,14 +221,17 @@ class _ByteBufferMemory(ABC):
         return self._data[start:stop]
 
     def hex(self) -> str:
+        """..."""
         return self._data.hex()
 
     @abstractmethod
     def read(self, num_bytes) -> BitStream:
+        """..."""
         pass
 
     @abstractmethod
     def write(self, data: BitStream):
+        """..."""
         pass
 
 
