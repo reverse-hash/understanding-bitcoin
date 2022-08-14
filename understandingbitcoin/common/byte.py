@@ -227,12 +227,10 @@ class _ByteBufferMemory(ABC):
     @abstractmethod
     def read(self, num_bytes) -> BitStream:
         """..."""
-        pass
 
     @abstractmethod
     def write(self, data: BitStream):
         """..."""
-        pass
 
 
 class _BigEndianByteBufferMemory(_ByteBufferMemory):
