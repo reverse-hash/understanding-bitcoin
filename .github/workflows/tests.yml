@@ -16,4 +16,4 @@ jobs:
       - name: Setup project
         run: sudo python setup.py develop
       - name: Run unit tests
-        run: python -m unittest parameterized
+        run: python -m unittest
