@@ -13,8 +13,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Setup project
-        run: sudo python setup.py develop
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
       - name: Generate report for 'understandingbitcoin' module
         # c0103: Variable name doesn't conform to snake_case naming style
         # r0903: Too few public methods
