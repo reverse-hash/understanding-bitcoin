@@ -5,6 +5,5 @@ setup(name='understanding-bitcoin',
       install_requires=[
           'coverage',
           'parametrized',  # Used for parameterized unit tests
-          'pillow',
           'pylint'
       ])
