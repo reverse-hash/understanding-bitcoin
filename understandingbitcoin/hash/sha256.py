@@ -3,6 +3,9 @@ from understandingbitcoin.common.byte import ByteBuffer, ByteOrder
 
 
 class Sha256:
+
+    """..."""
+
     _BLOCK_BYTES: int = 64  # 512 bits
     _LENGTH_BYTES: int = 8  # 64 bits
     _WORD_BITS: int = 32  # 4 bytes
@@ -26,6 +29,8 @@ class Sha256:
 
     @classmethod
     def hash(cls, message: bytes) -> bytes:
+        """..."""
+
         # message is extended so that its length is multiple of 512 bits
         extended_message: ByteBuffer = cls._extend_message(message)
 

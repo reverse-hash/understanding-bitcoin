@@ -18,7 +18,11 @@ jobs:
       - name: Generate report for 'understandingbitcoin' module
         run: pylint ./understandingbitcoin --fail-under=10
       - name: Generate report for 'test' module
+        # c0103: Variable name doesn't conform to snake_case naming style
         # c0114: Missing module docstring
         # c0116: Missing function or method docstring
+        # c2401: Function contains a non-ASCII character
+        # r0903: Too few public methods
         # r0904: Too many public methods
-        run: pylint ./test --fail-under=10 --disable=c0114,c0116,r0904
+
+        run: pylint ./test --fail-under=10 --disable=c0103,c0114,c0116,c2401,r0904,r0903

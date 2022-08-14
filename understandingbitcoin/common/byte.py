@@ -4,7 +4,6 @@ from __future__ import annotations
 import enum
 import string
 from abc import ABC, abstractmethod
-import abc
 
 from understandingbitcoin.common.bit import BitStream
 
