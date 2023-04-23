@@ -125,7 +125,7 @@ H_4^{(0)} = 0x510e527f, H_5^{(0)} = 0x9b05688c, H_6^{(0)} = 0x1f83d9ab, H_7^{(0)
 
 A continuación, la compresión se lleva a cabo mediante una serie de pasos que se ejecutan en un ciclo repetido 64 veces. En cada ciclo, se aplican dos funciones de mezcla $\large \Sigma_{0}$ y $\large \Sigma_{1}$, que combinan bits del bloque de entrada con constantes específicas de la función hash. Luego, se aplican operaciones de rotación y XOR para producir una salida de 256 bits. El proceso de compresión también utiliza otras dos funciones de mezcla adicionales que combinan diferentes partes del bloque de entrada. Estas funciones se denominan $\large Ch$ y $\large Maj$.
 
-Es decir, por cada bloque extendido W, repetiremos las siguientes operaciones 64 veces:
+Es decir, por cada bloque extendido $\large W_i$, repetiremos las siguientes operaciones 64 veces:
 
 ```math
 \large
@@ -143,7 +143,7 @@ a & = T_1 + T_2 \\
 \end{flalign}
 ```
 
-#### $\large \K_i (constantes)
+#### $\large K_i$ (constantes)
 
 Las constantes $\large K_i$ son un conjunto predefinido de valores de 32 bits que se utilizan en en las operaciones de mezcla durante la compresión de bloques. Se calculan utilizando los primeros 32 bits de las fracciones decimales de la raíz cuadrada de los primeros 64 números primos. Es importante destacar que estos valores son elegidos para asegurar que sean irracionales y que parezcan aleatorios.
 
