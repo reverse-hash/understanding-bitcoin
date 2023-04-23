@@ -1,5 +1,5 @@
 # Common utilities
-Bitcoin makes use of different technologies and algorithms. All these operations usually require operating at bit level or with a set of bytes. To facilitate the understanding and study of these matters, we will use a series of utilities designed for help us in this purpose.
+In order to make it easier for users to learn about the inner workings of Bitcoin, a number of utilities have been developed that allow operations to be performed at the bit and byte level, but presented in a more accessible string format. While this may not be the most optimized approach, it can make it much simpler to debug code and study how these systems function internally.
 
 ## BitStream
 Implements an immutable binary sequence, backed by a string representation.

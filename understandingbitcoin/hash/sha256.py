@@ -1,17 +1,32 @@
-"""..."""
+"""Implements the SHA-256 hash function."""
 from understandingbitcoin.common.bit import BitStream
 from understandingbitcoin.common.byte import ByteBuffer, ByteOrder
 
 
 class Sha256:
 
-    """..."""
+    """
+    SHA-256 is a cryptographic hash function that generates a 256-bit
+    (32-byte) hash value and is used for digital signatures, data integrity
+    checks, and password hashing.
+    """
 
-    _BLOCK_BYTES: int = 64  # 512 bits
-    _LENGTH_BYTES: int = 8  # 64 bits
-    _WORD_BITS: int = 32  # 4 bytes
+    # size in bytes of a block of data processed in the algorithm
+    _BLOCK_SIZE_BYTES: int = 64  # 512 bits
+    # size in bytes of the message length
+    _MESSAGE_LENGTH_SIZE_BYTES: int = 8  # 64 bits
+    # size in bits of a word in the algorithm
+    _WORD_SIZE_BITS: int = 32  # 4 bytes
 
-    K: tuple = (
+    # constant values used to initialize the eight 32-bit registers required
+    # in the hashing process
+    _H: tuple[8] = (
+        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c,
+        0x1f83d9ab, 0x5be0cd19)
+
+    # constants values used in addition to nonlinear functions in the
+    # compression step to mix the processed data in a different way
+    _K: tuple[64] = (
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
         0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
         0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
@@ -24,37 +39,40 @@ class Sha256:
         0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
         0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2)
 
-    H: tuple = (
-        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c,
-        0x1f83d9ab, 0x5be0cd19)
-
     @classmethod
     def hash(cls, message: bytes) -> bytes:
-        """..."""
+        """
+        Returns a 256-bit (32-byte) hash value in bytes using the SHA-256
+        algorithm for the given message.
 
-        # message is extended so that its length is multiple of 512 bits
+        :param message: The message to be hashed.
+        :return: The SHA-256 hash value in bytes.
+        """
+        # message is extended so that the total length of the message is a
+        # multiple of 512 bits
         extended_message: ByteBuffer = cls._extend_message(message)
 
-        # initializes the eight hash variables given by the first 32-bits of
-        # the fractional part of the square root of the first eight prime
-        # numbers (precalculated in H)
-        hash_values: list = list(map(
-            lambda n: BitStream.from_unsigned_int(n, cls._WORD_BITS), cls.H))
+        # extended message is divided into blocks of 512 bits
+        blocks: tuple = cls._split_extended_message(extended_message)
 
-        # hash is computed in blocks of 512 bits (64 bytes) long
+        # hash values are initialized with the precalculated values in H
+        hash_values: list[8] = cls._init_hash()
+
+        # each block is processed separately using a compression function, and
+        # the output of each block is used to update the hash values
         block: ByteBuffer
-        for block in cls._split_in_blocks(extended_message):
-            # each block is decomposed into 64 words of 32 bits and the hash
-            # values are computed by processing the words
-            words: tuple = cls._decompose_block(block)
+        for block in blocks:
+            # block is divided into 16 32-bit words and expanded to 64 32-bit
+            # words
+            words: tuple[64] = cls._expand_block(block)
+
+            # words are processed through a series of rounds and hash values
+            # are updated using the output of each block
             cls._compute_hash(hash_values, words)
 
-        digest: ByteBuffer = ByteBuffer()
-        value: BitStream
-        for value in hash_values:
-            digest.put_word32(value)
-
-        return digest.bytes()
+        # final hash output is generated once all blocks of the message have
+        # been processed
+        return cls._generate_digest(hash_values)
 
     @classmethod
     def _extend_message(cls, message: bytes) -> ByteBuffer:
@@ -64,89 +82,107 @@ class Sha256:
         for byte in message:
             extended_message.put_byte(byte)
 
-        # length of the message in bytes before padding
-        byte_length: int = len(extended_message)
-
         # padding is performed with a single bit '1' appended to the message
         # and k bytes 0x00 so that the length in bits of the padded message
         # becomes congruent to 448, modulo 512
         extended_message.put_byte(0x80)
-
-        k = cls._BLOCK_BYTES - ((byte_length
-                                 + 1  # the byte added in the previous line
-                                 + cls._LENGTH_BYTES) % cls._BLOCK_BYTES)
+        k = cls._BLOCK_SIZE_BYTES - ((len(message)
+                                      + 1  # byte added in the previous line
+                                      + cls._MESSAGE_LENGTH_SIZE_BYTES)
+                                     % cls._BLOCK_SIZE_BYTES)
         for _ in range(k):
             extended_message.put_byte(0x00)
 
         # length in bits of the message represented in 64-bit is appended at
         # the end completing a multiple of 512 bits
-        bit_length_64 = BitStream.from_unsigned_int(byte_length * 8, zfill=64)
-        extended_message.put_word64(bit_length_64)
+        message_length = BitStream.from_unsigned_int(len(message) * 8,
+                                                     zfill=64)
+        extended_message.put_word64(message_length)
 
         return extended_message
 
     @classmethod
-    def _split_in_blocks(cls, extended_message: ByteBuffer) -> tuple:
+    def _split_extended_message(cls, extended_message: ByteBuffer) -> tuple:
         blocks: list = []
-        num_blocks: int = len(extended_message) // cls._BLOCK_BYTES
+        num_blocks: int = len(extended_message) // cls._BLOCK_SIZE_BYTES
         for i in range(num_blocks):
-            block_start: int = i * cls._BLOCK_BYTES
-            block_end: int = block_start + cls._BLOCK_BYTES
+            block_start: int = i * cls._BLOCK_SIZE_BYTES
+            block_end: int = block_start + cls._BLOCK_SIZE_BYTES
             block: ByteBuffer = extended_message[block_start:block_end]
             blocks.append(block)
 
         return tuple(blocks)
 
     @classmethod
-    def _decompose_block(cls, block: ByteBuffer) -> tuple:
-        # create a 64 entry list of 32-bit words where the first 16 words
+    def _init_hash(cls) -> list[8]:
+        init_hash = []
+        n: int
+        for n in cls._H:
+            value = BitStream.from_unsigned_int(n, cls._WORD_SIZE_BITS)
+            init_hash.append(value)
+
+        return init_hash
+
+    @classmethod
+    def _expand_block(cls, block: ByteBuffer) -> tuple[64]:
+        # create a 64 entry list of 64 i
+        words: list[64] = [None] * 64
+
         # w[0..15] is a copy of the block
-        words: list = [BitStream()] * 64
         for i in range(16):
             words[i] = block.get_word32()
 
         # the rest w[16..63] expand the first 16 words to complete the 48 words
         for i in range(16, 64):
             words[i] = (words[i - 16] + cls._σ0(words[i - 15]) + words[i - 7]
-                        + cls._σ1(words[i - 2])).mod(cls._WORD_BITS)
+                        + cls._σ1(words[i - 2])).mod(cls._WORD_SIZE_BITS)
 
         return tuple(words)
 
     @classmethod
-    def _compute_hash(cls, hash_values: list, words: tuple) -> None:
+    def _compute_hash(cls, hash_values: list[8], words: tuple[64]) -> None:
         # unpack and copy current hash values
         (a, b, c, d, e, f, g, h) = hash_values
 
         # compresses the chunk in a loop of 64 iterations
         for i in range(64):
-            t1 = h + cls._Σ1(e) + cls._choice(e, f, g) + cls.K[i] + words[i]
+            t1 = h + cls._Σ1(e) + cls._choice(e, f, g) + cls._K[i] + words[i]
             t2 = cls._Σ0(a) + cls._majority(a, b, c)
             h = g
             g = f
             f = e
-            e = (d + t1).mod(cls._WORD_BITS)
+            e = (d + t1).mod(cls._WORD_SIZE_BITS)
             d = c
             c = b
             b = a
-            a = (t1 + t2).mod(cls._WORD_BITS)
+            a = (t1 + t2).mod(cls._WORD_SIZE_BITS)
 
-        # insert compressed chunk to the hash value
-        hash_values[0] = (hash_values[0] + a).mod(cls._WORD_BITS)
-        hash_values[1] = (hash_values[1] + b).mod(cls._WORD_BITS)
-        hash_values[2] = (hash_values[2] + c).mod(cls._WORD_BITS)
-        hash_values[3] = (hash_values[3] + d).mod(cls._WORD_BITS)
-        hash_values[4] = (hash_values[4] + e).mod(cls._WORD_BITS)
-        hash_values[5] = (hash_values[5] + f).mod(cls._WORD_BITS)
-        hash_values[6] = (hash_values[6] + g).mod(cls._WORD_BITS)
-        hash_values[7] = (hash_values[7] + h).mod(cls._WORD_BITS)
-
-    @staticmethod
-    def _choice(x: BitStream, y: BitStream, z: BitStream) -> BitStream:
-        return (x & y) ^ (~x & z)
+        # update hash values with the compressed chunk
+        hash_values[0] = (hash_values[0] + a).mod(cls._WORD_SIZE_BITS)
+        hash_values[1] = (hash_values[1] + b).mod(cls._WORD_SIZE_BITS)
+        hash_values[2] = (hash_values[2] + c).mod(cls._WORD_SIZE_BITS)
+        hash_values[3] = (hash_values[3] + d).mod(cls._WORD_SIZE_BITS)
+        hash_values[4] = (hash_values[4] + e).mod(cls._WORD_SIZE_BITS)
+        hash_values[5] = (hash_values[5] + f).mod(cls._WORD_SIZE_BITS)
+        hash_values[6] = (hash_values[6] + g).mod(cls._WORD_SIZE_BITS)
+        hash_values[7] = (hash_values[7] + h).mod(cls._WORD_SIZE_BITS)
 
     @staticmethod
-    def _majority(x: BitStream, y: BitStream, z: BitStream) -> BitStream:
-        return (x & y) ^ (x & z) ^ (y & z)
+    def _generate_digest(hash_values: list[8]) -> bytes:
+        digest: ByteBuffer = ByteBuffer()
+        value: BitStream
+        for value in hash_values:
+            digest.put_word32(value)
+
+        return digest.bytes()
+
+    @staticmethod
+    def _σ0(x: BitStream) -> BitStream:
+        return x.rotate_right(7) ^ x.rotate_right(18) ^ x >> 3
+
+    @staticmethod
+    def _σ1(x: BitStream) -> BitStream:
+        return x.rotate_right(17) ^ x.rotate_right(19) ^ x >> 10
 
     @staticmethod
     def _Σ0(x: BitStream) -> BitStream:
@@ -157,9 +193,9 @@ class Sha256:
         return x.rotate_right(6) ^ x.rotate_right(11) ^ x.rotate_right(25)
 
     @staticmethod
-    def _σ0(x: BitStream) -> BitStream:
-        return x.rotate_right(7) ^ x.rotate_right(18) ^ x >> 3
+    def _choice(x: BitStream, y: BitStream, z: BitStream) -> BitStream:
+        return (x & y) ^ (~x & z)
 
     @staticmethod
-    def _σ1(x: BitStream) -> BitStream:
-        return x.rotate_right(17) ^ x.rotate_right(19) ^ x >> 10
+    def _majority(x: BitStream, y: BitStream, z: BitStream) -> BitStream:
+        return (x & y) ^ (x & z) ^ (y & z)
