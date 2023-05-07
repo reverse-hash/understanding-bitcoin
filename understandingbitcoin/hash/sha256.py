@@ -66,9 +66,11 @@ class Sha256:
             # words
             words: tuple[64] = cls._expand_block(block)
 
-            # words are processed through a series of rounds and hash values
-            # are updated using the output of each block
-            cls._compute_hash(hash_values, words)
+            # words are processed through a series of rounds
+            block_output: tuple[8] = cls._compress_words(hash_values, words)
+
+            # hash values are updated using the output of each block
+            cls._update_hash(hash_values, block_output)
 
         # final hash output is generated once all blocks of the message have
         # been processed
@@ -125,10 +127,11 @@ class Sha256:
 
     @classmethod
     def _expand_block(cls, block: ByteBuffer) -> tuple[64]:
-        # create a 64 entry list of 64 i
+        # create a 64 entry list
         words: list[64] = [None] * 64
 
         # w[0..15] is a copy of the block
+        i: int
         for i in range(16):
             words[i] = block.get_word32()
 
@@ -140,7 +143,7 @@ class Sha256:
         return tuple(words)
 
     @classmethod
-    def _compute_hash(cls, hash_values: list[8], words: tuple[64]) -> None:
+    def _compress_words(cls, hash_values: list[8], words: tuple[64]) -> tuple:
         # unpack and copy current hash values
         (a, b, c, d, e, f, g, h) = hash_values
 
@@ -157,24 +160,7 @@ class Sha256:
             b = a
             a = (t1 + t2).mod(cls._WORD_SIZE_BITS)
 
-        # update hash values with the compressed chunk
-        hash_values[0] = (hash_values[0] + a).mod(cls._WORD_SIZE_BITS)
-        hash_values[1] = (hash_values[1] + b).mod(cls._WORD_SIZE_BITS)
-        hash_values[2] = (hash_values[2] + c).mod(cls._WORD_SIZE_BITS)
-        hash_values[3] = (hash_values[3] + d).mod(cls._WORD_SIZE_BITS)
-        hash_values[4] = (hash_values[4] + e).mod(cls._WORD_SIZE_BITS)
-        hash_values[5] = (hash_values[5] + f).mod(cls._WORD_SIZE_BITS)
-        hash_values[6] = (hash_values[6] + g).mod(cls._WORD_SIZE_BITS)
-        hash_values[7] = (hash_values[7] + h).mod(cls._WORD_SIZE_BITS)
-
-    @staticmethod
-    def _generate_digest(hash_values: list[8]) -> bytes:
-        digest: ByteBuffer = ByteBuffer()
-        value: BitStream
-        for value in hash_values:
-            digest.put_word32(value)
-
-        return digest.bytes()
+        return a, b, c, d, e, f, g, h
 
     @staticmethod
     def _σ0(x: BitStream) -> BitStream:
@@ -199,3 +185,26 @@ class Sha256:
     @staticmethod
     def _majority(x: BitStream, y: BitStream, z: BitStream) -> BitStream:
         return (x & y) ^ (x & z) ^ (y & z)
+
+    @classmethod
+    def _update_hash(cls, hash_values: list[8], block_output: tuple):
+        (a, b, c, d, e, f, g, h) = block_output
+
+        # update hash values with the compressed chuck
+        hash_values[0] = (hash_values[0] + a).mod(cls._WORD_SIZE_BITS)
+        hash_values[1] = (hash_values[1] + b).mod(cls._WORD_SIZE_BITS)
+        hash_values[2] = (hash_values[2] + c).mod(cls._WORD_SIZE_BITS)
+        hash_values[3] = (hash_values[3] + d).mod(cls._WORD_SIZE_BITS)
+        hash_values[4] = (hash_values[4] + e).mod(cls._WORD_SIZE_BITS)
+        hash_values[5] = (hash_values[5] + f).mod(cls._WORD_SIZE_BITS)
+        hash_values[6] = (hash_values[6] + g).mod(cls._WORD_SIZE_BITS)
+        hash_values[7] = (hash_values[7] + h).mod(cls._WORD_SIZE_BITS)
+
+    @staticmethod
+    def _generate_digest(hash_values: list[8]) -> bytes:
+        digest: ByteBuffer = ByteBuffer(order=ByteOrder.BIG_ENDIAN)
+        value: BitStream
+        for value in hash_values:
+            digest.put_word32(value)
+
+        return digest.bytes()

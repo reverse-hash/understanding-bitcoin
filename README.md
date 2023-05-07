@@ -4,3 +4,10 @@
 ![test workflow](https://github.com/reverse-hash/understanding-bitcoin/actions/workflows/tests.yml/badge.svg)
 ![format workflow](https://github.com/reverse-hash/understanding-bitcoin/actions/workflows/format.yml/badge.svg)
 ![coverage workflow](https://github.com/reverse-hash/understanding-bitcoin/actions/workflows/coverage.yml/badge.svg)
+
+## First steps
+
+```commandline
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```

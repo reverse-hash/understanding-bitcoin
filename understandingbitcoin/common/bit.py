@@ -25,7 +25,8 @@ class BitStream:
         :param byte_value: The array of bytes to convert
         :return: The binary sequence representation
         """
-        return BitStream.from_unsigned_int(int.from_bytes(byte_value, byteorder='big'))
+        return BitStream.from_unsigned_int(int.from_bytes(byte_value,
+                                                          byteorder='big'))
 
     @classmethod
     def from_char(cls, char: str) -> BitStream:
@@ -142,9 +143,11 @@ class BitStream:
         if isinstance(other, (BitStream, str)):
             result: int = int(str(self) or self.BIT_0, 2) \
                           + int(str(other) or self.BIT_0, 2)
-            return BitStream.from_unsigned_int(result, max(len(self), len(other)))
+            return BitStream.from_unsigned_int(result, max(len(self),
+                                                           len(other)))
 
-        return BitStream.from_unsigned_int(int(self._value or self.BIT_0, 2) + other)
+        return BitStream.from_unsigned_int(int(self._value or self.BIT_0, 2)
+                                           + other)
 
     def __and__(self, other: BitStream):
         """
