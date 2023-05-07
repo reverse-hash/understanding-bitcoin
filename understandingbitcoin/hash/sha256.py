@@ -4,7 +4,6 @@ from understandingbitcoin.common.byte import ByteBuffer, ByteOrder
 
 
 class Sha256:
-
     """
     SHA-256 is a cryptographic hash function that generates a 256-bit
     (32-byte) hash value and is used for digital signatures, data integrity
@@ -88,10 +87,10 @@ class Sha256:
         # and k bytes 0x00 so that the length in bits of the padded message
         # becomes congruent to 448, modulo 512
         extended_message.put_byte(0x80)
-        k = cls._BLOCK_SIZE_BYTES - ((len(message)
-                                      + 1  # byte added in the previous line
-                                      + cls._MESSAGE_LENGTH_SIZE_BYTES)
-                                     % cls._BLOCK_SIZE_BYTES)
+        k: int = cls._BLOCK_SIZE_BYTES - ((len(message)
+                                           + 1  # byte added previously
+                                           + cls._MESSAGE_LENGTH_SIZE_BYTES)
+                                          % cls._BLOCK_SIZE_BYTES)
         for _ in range(k):
             extended_message.put_byte(0x00)
 
