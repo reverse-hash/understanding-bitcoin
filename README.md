@@ -11,3 +11,6 @@
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+- English: https://understanding-bitcoin.gitbook.io/understanding-bitcoin/
+- Spanish: https://understanding-bitcoin.gitbook.io/entendiendo-bitcoin/
